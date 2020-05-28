@@ -1,19 +1,44 @@
 swagger: '2.0'
 
 info:
-  title: Spy Service
-  description: Web service for talking to Spy systems
+  title: API Documentation for SPY Systems
+  description: |
+    API Documentation for communicating with the SPY System.
+
+    # Introduction
+    This document will describe how developers can authenticate and communicate with the [SPY System](https://www.spysystem.dk) API.
+
+    # OpenAPI Specification (OAS)
+    We're using [Swagger](https://swagger.io/) to generate and publish an **OpenAPI Specification (OAS)** document for the [SPY System API]
+    which is compatible with tools like [Swagger](https://swagger.io/), [Open API Generator](https://openapi-generator.tech/), [Postman](https://www.postman.com/)
+    that are used for viewing and testing resources before putting them in your codebase. Also for generating client libraries in php,
+    ruby, python, go, csharp and a lot [more](https://openapi-generator.tech/docs/generators).
+
+    # Order Flow (IMPORTANT)
+    Once the [order](#tag/orders) is created it will be imported into the SPY System. Here it will be waiting to be packed. Once packed a webhook event will
+    tell the api user the order has been packed and needs to be *accepted* before being send.
+
+    At this point the status for the [delivery](#tag/delivery) is *pending*.
+
+    By changing the [delivery](#tag/delivery) status to *accepted*, will notice the spy system that it is ok for being delivered and invoiced.
+
+    By changing the status to *rejected* will cancel the [delivery](#tag/delivery) and make it immuteable. A new [delivery](#tag/delivery) is required for it to being delivered (**NOT** a new order).
+
+    It is possible to change status from *accepted* to pending and vice versa, but *rejected* is locking it.
+
   version: 1.2.6
   contact:
     email: info@spysystem.dk
+
+  x-logo:
+    url: "https://spysystem.github.io/300x110_grey_spy_logo.png"
+    altText: "SPY System Logo"
+    backgroundColor: "#FFFFFF"
 
   license:
     name: Apache 2.9
     url: http://www.apache.org/licenses/LICENSE-2.0.html
 
-    x-logo:
-      url: http://spysystem.github.io/300x110_grey_spy_logo.png
-      altText: SPY System Logo
 
 host: demo.spysystem.dk
 basePath: /api/v1
@@ -106,7 +131,7 @@ paths:
 
   /orders:
     post:
-      description: Create Order
+      description: "Create Order"
       operationId: createOrder
       tags:
         - orders
