@@ -1,0 +1,623 @@
+swagger: '2.0'
+
+info:
+  title: Spy Service
+  description: Web service for talking to Spy systems
+  version: 1.2.6
+  contact:
+    email: info@spysystem.dk
+
+  license:
+    name: Apache 2.9
+    url: http://www.apache.org/licenses/LICENSE-2.0.html
+
+host: demo.spysystem.dk
+basePath: /api/v1
+schemes:
+  - https
+
+securityDefinitions:
+  ApiKeyAuth:
+    type: apiKey
+    in: header
+    name: X-Spy-Authorization
+
+  ApiReadToken:
+    type: apiKey
+    in: header
+    name: X-Spy-ReadToken
+
+paths:
+  /auth/login:
+    post:
+      description: Authenticate with Spy
+      operationId: Authenticate
+      parameters:
+        - in: body
+          name: data
+          required: true
+          schema:
+            $ref: '#/definitions/AuthenticateData'
+      responses:
+        '200':
+          description: Authentication successfull - authorization token in response data
+          schema:
+            $ref: '#/definitions/AuthenticateResponse'
+
+  /variants:
+    get:
+      description: List Variants
+      operationId: listVariants
+      tags:
+        - variants
+      security:
+        - ApiReadToken: []
+        - ApiKeyAuth: []
+      parameters:
+        - in: query
+          name: brandName
+          required: true
+          type: string
+        - in: query
+          name: styleNo
+          required: false
+          type: string
+      produces:
+        - application/json
+        - application/xml
+        - text/xml
+      responses:
+        '200':
+          description: Lists Variants
+          schema:
+            $ref: '#/definitions/ListVariantsResponse'
+
+  /variants/{barcode}:
+    get:
+      description: List Variant based on Barcode
+      operationId: getVariant
+      tags:
+        - variants
+      security:
+        - ApiReadToken: []
+        - ApiKeyAuth: []
+      parameters:
+        - in: path
+          name: barcode
+          required: true
+          type: string
+        - in: query
+          name: brandName
+          required: true
+          type: string
+      produces:
+        - application/json
+        - application/xml
+        - text/xml
+      responses:
+        '200':
+          description: Lists Variant
+          schema:
+            $ref: '#/definitions/ListVariantResponse'
+
+  /orders:
+    post:
+      description: Create Order
+      operationId: createOrder
+      tags:
+        - orders
+      security:
+        - ApiKeyAuth: []
+      parameters:
+        - in: body
+          name: data
+          required: true
+          schema:
+            $ref: '#/definitions/OrderData'
+      produces:
+        - application/json
+        - application/xml
+        - text/xml
+      responses:
+        '200':
+          description: Create Order Successful
+          schema:
+            $ref: '#/definitions/CreateOrderResponse'
+
+  /delivery/{deliveryNo}:
+    post:
+      description: Delivery Status
+      operationId: deliveryStatus
+      tags:
+        - delivery
+      security:
+        - ApiKeyAuth: []
+      parameters:
+        - in: path
+          name: deliveryNo
+          required: true
+          type: string
+        - in: body
+          name: data
+          required: true
+          schema:
+            $ref: '#/definitions/DeliveryData'
+      produces:
+        - application/json
+        - application/xml
+        - text/xml
+      responses:
+        '200':
+          description: Delivery Status Changed Successfully
+          schema:
+            $ref: '#/definitions/DeliveryResponse'
+
+  /delivery:
+    get:
+      description: List Deliveries
+      operationId: listDeliveries
+      tags:
+        - delivery
+      security:
+        - ApiReadToken: []
+        - ApiKeyAuth: []
+      parameters:
+        - in: query
+          name: from
+          description: From Date
+          required: false
+          type: string
+        - in: query
+          name: to
+          description: To Date
+          required: false
+          type: string
+      produces:
+        - application/json
+        - application/xml
+        - text/xml
+      responses:
+        '200':
+          description: Lists Deliveries
+          schema:
+            $ref: '#/definitions/DeliveriesResponse'
+
+definitions:
+  Style:
+    type: object
+    required:
+      - styleNo
+      - styleName
+      - brand
+      - type
+      - countryOfOrigin
+    properties:
+      'styleNo':
+        type: string
+      'styleName':
+        type: string
+      'brand':
+        type: string
+      'type':
+        type: string
+      'countryOfOrigin':
+        description: ISO 3166-1 alpha-2
+        type: string
+      'images':
+        type: array
+        items:
+          $ref: '#/definitions/Image'
+
+  StyleColor:
+    type: object
+    required:
+      - name
+    properties:
+      'name':
+        type: string
+      'images':
+        type: array
+        items:
+          $ref: '#/definitions/Image'
+
+  StyleVariant:
+    type: object
+    required:
+      - name
+      - type
+      - barcode
+      - qtyInVariant
+    properties:
+      'name':
+        type: string
+      'type':
+        type: string
+        enum:
+          - size
+          - assortment
+      'barcode':
+        type: string
+      'qtyInVariant':
+        description: If StyleVariant is of type assortment, each variant may contain multiple qties
+        type: integer
+      'variantsInVariant':
+        description: If StyleVariant is of type assortment, then this will show which items it contains
+        type: array
+        items:
+          $ref: '#/definitions/VariantLine'
+
+  Image:
+    type: object
+    required:
+      - url
+    properties:
+      'url':
+        type: string
+
+  Supplier:
+    type: object
+    required:
+      - accountNo
+      - name
+      - address
+    properties:
+      'accountNo':
+        type: string
+      'name':
+        type: string
+      'address':
+        $ref: '#/definitions/Address'
+
+  User:
+    type: object
+    required:
+      - name
+      - email
+    properties:
+      'name':
+        type: string
+      'email':
+        type: string
+
+  Address:
+    type: object
+    required:
+      - addressLine1
+      - addressLine2
+      - addressLine3
+      - zipCode
+      - city
+      - state
+      - country
+    properties:
+      'addressLine1':
+        type: string
+      'addressLine2':
+        type: string
+      'addressLine3':
+        type: string
+      'zipCode':
+        type: string
+      'city':
+        type: string
+      'state':
+        type: string
+      'country':
+        description: ISO 3166-1 alpha-2
+        type: string
+
+  VariantLine:
+    type: object
+    required:
+      - styleVariant
+      - qty
+    properties:
+      'styleVariant':
+        $ref: '#/definitions/StyleVariant'
+      'qty':
+        type: integer
+
+  Response:
+    type: object
+    required:
+      - status
+      - message
+    properties:
+      'status':
+        type: integer
+      'message':
+        type: string
+
+  AuthenticateResponseData:
+    type: object
+    required:
+      - token
+    properties:
+      'token':
+        type: string
+  AuthenticateResponse:
+    allOf:
+      - $ref: '#/definitions/Response'
+      - type: object
+        required:
+          - data
+        properties:
+          'data':
+            $ref: '#/definitions/AuthenticateResponseData'
+
+  AuthenticateData:
+    type: object
+    required:
+      - clientID
+      - clientSecret
+    properties:
+      'clientID':
+        type: string
+      'clientSecret':
+        type: string
+
+  ListVariantsResponseData:
+    type: object
+    required:
+      - count
+      - variants
+    properties:
+      'count':
+        type: integer
+      'variants':
+        type: array
+        items:
+          $ref: '#/definitions/Variant'
+
+  ListVariantsResponse:
+    allOf:
+      - $ref: '#/definitions/Response'
+      - type: object
+        required:
+          - data
+        properties:
+          'data':
+            $ref: '#/definitions/ListVariantsResponseData'
+
+  ListVariantResponseData:
+    type: object
+    required:
+      - variant
+    properties:
+      'variant':
+        $ref: '#/definitions/Variant'
+
+  ListVariantResponse:
+    allOf:
+      - $ref: '#/definitions/Response'
+      - type: object
+        required:
+          - data
+        properties:
+          'data':
+            $ref: '#/definitions/ListVariantResponseData'
+
+  OrderData:
+    type: object
+    required:
+      - shippingAddress
+      - orderLineItems
+      - reference
+      - freight
+    properties:
+      'shippingAddress':
+        $ref: '#/definitions/ShippingAddress'
+      'orderLineItems':
+        type: array
+        items:
+          $ref: '#/definitions/OrderLineItem'
+      'reference':
+        type: string
+      'comment':
+        type: string
+      'freight':
+        $ref: '#/definitions/Freight'
+
+  DeliveryData:
+    type: object
+    required:
+      - status
+    properties:
+      'status':
+        type: string
+        enum:
+          - pending
+          - accepted
+          - rejected
+
+  CreateOrderResponse:
+    allOf:
+      - $ref: '#/definitions/Response'
+      - type: object
+        required:
+          - data
+        properties:
+          'data':
+            $ref: '#/definitions/CreateOrderResponseData'
+
+  DeliveryResponse:
+    allOf:
+      - $ref: '#/definitions/Response'
+      - type: object
+        required:
+          - data
+        properties:
+          'data':
+            $ref: '#/definitions/DeliveryResponseData'
+
+  ShippingAddress:
+    type: object
+    required:
+      - address
+      - city
+      - zip
+      - countryCode
+      - firstName
+      - lastName
+      - phone
+      - email
+    properties:
+      'address':
+        type: string
+      'address2':
+        type: string
+      'city':
+        type: string
+      'company':
+        type: string
+      'country':
+        type: string
+      'countryCode':
+        type: string
+      'firstName':
+        type: string
+      'lastName':
+        type: string
+      'phone':
+        type: string
+      'email':
+        type: string
+      'provinceCode':
+        type: string
+      'zip':
+        type: string
+
+  OrderLineItem:
+    type: object
+    required:
+      - barcode
+      - quantity
+      - price
+    properties:
+      'barcode':
+        type: string
+      'quantity':
+        type: integer
+      'price':
+        type: number
+
+  Variant:
+    type: object
+    required:
+      - barcode
+      - styleNo
+      - brandName
+      - styleName
+      - colorName
+      - size
+      - quantity
+      - price
+      - currency
+      - images
+    properties:
+      'barcode':
+        type: string
+      'styleNo':
+        type: string
+      'brandName':
+        type: string
+      'styleName':
+        type: string
+      'colorName':
+        type: string
+      'size':
+        type: string
+      'quantity':
+        type: number
+      'price':
+        type: number
+      'currency':
+        type: string
+      'images':
+        type: array
+        items:
+          $ref: '#/definitions/Image'
+
+  CreateOrderResponseData:
+    type: object
+    required:
+      - orderId
+      - orderStatus
+    properties:
+      'orderId':
+        type: number
+      'orderStatus':
+        type: string
+
+  DeliveryResponseData:
+      type: object
+      required:
+        - deliveryNo
+        - status
+      properties:
+        'deliveryNo':
+          type: number
+        'status':
+          type: string
+          enum:
+            - pending
+            - accepted
+            - rejected
+
+  Freight:
+    type: object
+    required:
+      - freightAmount
+    properties:
+      'freightAmount':
+        type: number
+      'freightType':
+        type: string
+      'parcelShopId':
+        type: string
+
+  DeliveriesResponseData:
+    type: object
+    required:
+      - count
+      - deliveries
+    properties:
+      'count':
+        type: integer
+      'deliveries':
+        type: array
+        items:
+          $ref: '#/definitions/Delivery'
+
+  DeliveriesResponse:
+    allOf:
+      - $ref: '#/definitions/Response'
+      - type: object
+        required:
+          - data
+        properties:
+          'data':
+            $ref: '#/definitions/DeliveriesResponseData'
+
+  Delivery:
+    type: object
+    required:
+      - deliveryNo
+      - status
+      - variants
+    properties:
+      'deliveryNo':
+        type: string
+      'status':
+        type: string
+      'variants':
+        type: array
+        items:
+          $ref: '#/definitions/Variant'
+
+parameters:
+  IncludeImages:
+    in: query
+    name: includeImages
+    type: boolean
+    default: false
