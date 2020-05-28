@@ -11,6 +11,10 @@ info:
     name: Apache 2.9
     url: http://www.apache.org/licenses/LICENSE-2.0.html
 
+    x-logo:
+      url: http://spysystem.github.io/300x110_grey_spy_logo.png
+      altText: SPY System Logo
+
 host: demo.spysystem.dk
 basePath: /api/v1
 schemes:
