@@ -26,7 +26,16 @@ info:
 
     It is possible to change status from *accepted* to pending and vice versa, but *rejected* is locking it.
 
-  version: 1.2.6
+    # CHANGELOG
+    - 1.2.6
+      - Added Variants endpoint
+      - Added Delivery endpoint
+      - Added Orders endpoint
+    - 1.2.7
+      - Added Freight endpoint
+      - Added Brands endpoint
+
+  version: 1.2.7
   contact:
     email: info@spysystem.dk
 
@@ -210,6 +219,43 @@ paths:
           description: Lists Deliveries
           schema:
             $ref: '#/definitions/DeliveriesResponse'
+  /brands:
+    get:
+      description: List Brands
+      operationId: listBrands
+      tags:
+        - brands
+      security:
+        - ApiReadToken: []
+        - ApiKeyAuth: []
+      produces:
+        - application/json
+        - application/xml
+        - text/xml
+      responses:
+        '200':
+          description: Lists Brands
+          schema:
+            $ref: '#/definitions/ListBrandsResponse'
+
+  /freight:
+    get:
+      description: List Freight Options
+      operationId: listFreight
+      tags:
+        - freight
+      security:
+        - ApiReadToken: []
+        - ApiKeyAuth: []
+      produces:
+        - application/json
+        - application/xml
+        - text/xml
+      responses:
+        '200':
+          description: List Freight Options
+          schema:
+            $ref: '#/definitions/ListFreightResponse'
 
 definitions:
   Style:
@@ -643,6 +689,65 @@ definitions:
         type: array
         items:
           $ref: '#/definitions/Variant'
+
+  ListBrandsResponse:
+      allOf:
+        - $ref: '#/definitions/Response'
+        - type: object
+          required:
+            - data
+          properties:
+            'data':
+              $ref: '#/definitions/ListBrandsResponseData'
+
+  ListBrandsResponseData:
+    type: object
+    required:
+      - count
+      - brands
+    properties:
+      'count':
+        type: integer
+      'brands':
+        type: array
+        items:
+          $ref: '#/definitions/Brand'
+  Brand:
+    type: object
+    required:
+      - brandName
+    properties:
+      'brandName':
+        type: string
+
+  ListFreightResponse:
+    allOf:
+      - $ref: '#/definitions/Response'
+      - type: object
+        required:
+          - data
+        properties:
+          'data':
+            $ref: '#/definitions/ListFreightResponseData'
+
+  ListFreightResponseData:
+    type: object
+    required:
+      - count
+      - freight
+    properties:
+      'count':
+        type: integer
+      'freightOptions':
+        type: array
+        items:
+          $ref: '#/definitions/FreightOption'
+
+  FreightOption:
+    type: object
+    properties:
+      'freightType':
+        type: string
 
 parameters:
   IncludeImages:
