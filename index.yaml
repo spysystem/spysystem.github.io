@@ -42,8 +42,10 @@ info:
         - Quality
         - Type
         - Gender
+    - 1.2.14
+      - Added variantType to Variant
 
-  version: 1.2.8
+  version: 1.2.15
   contact:
     email: info@spysystem.dk
 
@@ -55,7 +57,6 @@ info:
   license:
     name: Apache 2.9
     url: http://www.apache.org/licenses/LICENSE-2.0.html
-
 
 host: demo.spysystem.dk
 basePath: /api/v1
@@ -118,6 +119,46 @@ paths:
           schema:
             $ref: '#/definitions/ListVariantsResponse'
 
+  /brands:
+    get:
+      description: List Brands
+      operationId: listBrands
+      tags:
+        - brands
+      security:
+        - ApiReadToken: []
+        - ApiKeyAuth: []
+      produces:
+        - application/json
+        - application/xml
+        - text/xml
+      responses:
+        '200':
+          description: Lists Brands
+          schema:
+            $ref: '#/definitions/ListBrandsResponse'
+
+  /freight:
+    get:
+      description: List Freight Options
+      operationId: listFreight
+      tags:
+        - freight
+      security:
+        - ApiReadToken: []
+        - ApiKeyAuth: []
+      produces:
+        - application/json
+        - application/xml
+        - text/xml
+      responses:
+        '200':
+          description: List Freight Options
+          schema:
+            $ref: '#/definitions/ListFreightResponse'
+
+
+
   /variants/{barcode}:
     get:
       description: List Variant based on Barcode
@@ -148,7 +189,7 @@ paths:
 
   /orders:
     post:
-      description: "Create Order"
+      description: Create Order
       operationId: createOrder
       tags:
         - orders
@@ -197,7 +238,6 @@ paths:
           description: Delivery Status Changed Successfully
           schema:
             $ref: '#/definitions/DeliveryResponse'
-
   /delivery:
     get:
       description: List Deliveries
@@ -227,82 +267,8 @@ paths:
           description: Lists Deliveries
           schema:
             $ref: '#/definitions/DeliveriesResponse'
-  /brands:
-    get:
-      description: List Brands
-      operationId: listBrands
-      tags:
-        - brands
-      security:
-        - ApiReadToken: []
-        - ApiKeyAuth: []
-      produces:
-        - application/json
-        - application/xml
-        - text/xml
-      responses:
-        '200':
-          description: Lists Brands
-          schema:
-            $ref: '#/definitions/ListBrandsResponse'
-
-  /freight:
-    get:
-      description: List Freight Options
-      operationId: listFreight
-      tags:
-        - freight
-      security:
-        - ApiReadToken: []
-        - ApiKeyAuth: []
-      produces:
-        - application/json
-        - application/xml
-        - text/xml
-      responses:
-        '200':
-          description: List Freight Options
-          schema:
-            $ref: '#/definitions/ListFreightResponse'
 
 definitions:
-  Style:
-    type: object
-    required:
-      - styleNo
-      - styleName
-      - brand
-      - type
-      - countryOfOrigin
-    properties:
-      'styleNo':
-        type: string
-      'styleName':
-        type: string
-      'brand':
-        type: string
-      'type':
-        type: string
-      'countryOfOrigin':
-        description: ISO 3166-1 alpha-2
-        type: string
-      'images':
-        type: array
-        items:
-          $ref: '#/definitions/Image'
-
-  StyleColor:
-    type: object
-    required:
-      - name
-    properties:
-      'name':
-        type: string
-      'images':
-        type: array
-        items:
-          $ref: '#/definitions/Image'
-
   StyleVariant:
     type: object
     required:
@@ -335,58 +301,6 @@ definitions:
       - url
     properties:
       'url':
-        type: string
-
-  Supplier:
-    type: object
-    required:
-      - accountNo
-      - name
-      - address
-    properties:
-      'accountNo':
-        type: string
-      'name':
-        type: string
-      'address':
-        $ref: '#/definitions/Address'
-
-  User:
-    type: object
-    required:
-      - name
-      - email
-    properties:
-      'name':
-        type: string
-      'email':
-        type: string
-
-  Address:
-    type: object
-    required:
-      - addressLine1
-      - addressLine2
-      - addressLine3
-      - zipCode
-      - city
-      - state
-      - country
-    properties:
-      'addressLine1':
-        type: string
-      'addressLine2':
-        type: string
-      'addressLine3':
-        type: string
-      'zipCode':
-        type: string
-      'city':
-        type: string
-      'state':
-        type: string
-      'country':
-        description: ISO 3166-1 alpha-2
         type: string
 
   VariantLine:
@@ -588,6 +502,7 @@ definitions:
     type: object
     required:
       - barcode
+      - variantType
       - styleNo
       - brandName
       - styleName
@@ -600,6 +515,11 @@ definitions:
     properties:
       'barcode':
         type: string
+      'variantType':
+        type: string
+        enum:
+          - size
+          - assortment
       'styleNo':
         type: string
       'brandName':
@@ -629,9 +549,9 @@ definitions:
       'gender':
         type: string
       'images':
-          type: array
-          items:
-            $ref: '#/definitions/Image'
+        type: array
+        items:
+          $ref: '#/definitions/Image'
 
   CreateOrderResponseData:
     type: object
@@ -711,15 +631,14 @@ definitions:
           $ref: '#/definitions/Variant'
 
   ListBrandsResponse:
-      allOf:
-        - $ref: '#/definitions/Response'
-        - type: object
-          required:
-            - data
-          properties:
-            'data':
-              $ref: '#/definitions/ListBrandsResponseData'
-
+    allOf:
+      - $ref: '#/definitions/Response'
+      - type: object
+        required:
+          - data
+        properties:
+          'data':
+            $ref: '#/definitions/ListBrandsResponseData'
   ListBrandsResponseData:
     type: object
     required:
@@ -754,7 +673,7 @@ definitions:
     type: object
     required:
       - count
-      - freight
+      - freightOptions
     properties:
       'count':
         type: integer
@@ -768,10 +687,3 @@ definitions:
     properties:
       'freightType':
         type: string
-
-parameters:
-  IncludeImages:
-    in: query
-    name: includeImages
-    type: boolean
-    default: false
