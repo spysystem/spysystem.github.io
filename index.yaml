@@ -506,12 +506,19 @@ definitions:
       - styleNo
       - brandName
       - styleName
+      - styleNameWebshop
       - colorName
       - size
       - quantity
       - price
       - currency
       - images
+      - tags
+      - gender
+      - type
+      - category
+      - wash
+      - styleDescription
     properties:
       'barcode':
         type: string
@@ -525,6 +532,8 @@ definitions:
       'brandName':
         type: string
       'styleName':
+        type: string
+      'styleNameWebshop':
         type: string
       'colorName':
         type: string
@@ -591,6 +600,18 @@ definitions:
       'parcelShopId':
         type: string
 
+  TrackAndTrace:
+    type: object
+    properties:
+      'trackingNumbers':
+        type: array
+        items:
+          type: string
+      'trackingLinks':
+        type: array
+        items:
+          type: string
+
   DeliveriesResponseData:
     type: object
     required:
@@ -629,6 +650,9 @@ definitions:
         type: array
         items:
           $ref: '#/definitions/Variant'
+      'trackAndTrace':
+        items:
+          $ref: '#/definitions/TrackAndTrace'
 
   ListBrandsResponse:
     allOf:
