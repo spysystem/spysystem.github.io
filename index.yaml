@@ -91,34 +91,6 @@ paths:
           schema:
             $ref: '#/definitions/AuthenticateResponse'
 
-  /variants:
-    get:
-      description: List Variants
-      operationId: listVariants
-      tags:
-        - variants
-      security:
-        - ApiReadToken: []
-        - ApiKeyAuth: []
-      parameters:
-        - in: query
-          name: brandName
-          required: true
-          type: string
-        - in: query
-          name: styleNo
-          required: false
-          type: string
-      produces:
-        - application/json
-        - application/xml
-        - text/xml
-      responses:
-        '200':
-          description: Lists Variants
-          schema:
-            $ref: '#/definitions/ListVariantsResponse'
-
   /brands:
     get:
       description: List Brands
@@ -138,106 +110,6 @@ paths:
           schema:
             $ref: '#/definitions/ListBrandsResponse'
 
-  /freight:
-    get:
-      description: List Freight Options
-      operationId: listFreight
-      tags:
-        - freight
-      security:
-        - ApiReadToken: []
-        - ApiKeyAuth: []
-      produces:
-        - application/json
-        - application/xml
-        - text/xml
-      responses:
-        '200':
-          description: List Freight Options
-          schema:
-            $ref: '#/definitions/ListFreightResponse'
-
-
-
-  /variants/{barcode}:
-    get:
-      description: List Variant based on Barcode
-      operationId: getVariant
-      tags:
-        - variants
-      security:
-        - ApiReadToken: []
-        - ApiKeyAuth: []
-      parameters:
-        - in: path
-          name: barcode
-          required: true
-          type: string
-        - in: query
-          name: brandName
-          required: true
-          type: string
-      produces:
-        - application/json
-        - application/xml
-        - text/xml
-      responses:
-        '200':
-          description: Lists Variant
-          schema:
-            $ref: '#/definitions/ListVariantResponse'
-
-  /orders:
-    post:
-      description: Create Order
-      operationId: createOrder
-      tags:
-        - orders
-      security:
-        - ApiKeyAuth: []
-      parameters:
-        - in: body
-          name: data
-          required: true
-          schema:
-            $ref: '#/definitions/OrderData'
-      produces:
-        - application/json
-        - application/xml
-        - text/xml
-      responses:
-        '200':
-          description: Create Order Successful
-          schema:
-            $ref: '#/definitions/CreateOrderResponse'
-
-  /delivery/{deliveryNo}:
-    post:
-      description: Delivery Status
-      operationId: deliveryStatus
-      tags:
-        - delivery
-      security:
-        - ApiKeyAuth: []
-      parameters:
-        - in: path
-          name: deliveryNo
-          required: true
-          type: string
-        - in: body
-          name: data
-          required: true
-          schema:
-            $ref: '#/definitions/DeliveryData'
-      produces:
-        - application/json
-        - application/xml
-        - text/xml
-      responses:
-        '200':
-          description: Delivery Status Changed Successfully
-          schema:
-            $ref: '#/definitions/DeliveryResponse'
   /delivery:
     get:
       description: List Deliveries
@@ -267,6 +139,133 @@ paths:
           description: Lists Deliveries
           schema:
             $ref: '#/definitions/DeliveriesResponse'
+
+  /delivery/{deliveryNo}:
+    post:
+      description: Delivery Status
+      operationId: deliveryStatus
+      tags:
+        - delivery
+      security:
+        - ApiKeyAuth: []
+      parameters:
+        - in: path
+          name: deliveryNo
+          required: true
+          type: string
+        - in: body
+          name: data
+          required: true
+          schema:
+            $ref: '#/definitions/DeliveryData'
+      produces:
+        - application/json
+        - application/xml
+        - text/xml
+      responses:
+        '200':
+          description: Delivery Status Changed Successfully
+          schema:
+            $ref: '#/definitions/DeliveryResponse'
+
+  /freight:
+    get:
+      description: List Freight Options
+      operationId: listFreight
+      tags:
+        - freight
+      security:
+        - ApiReadToken: []
+        - ApiKeyAuth: []
+      produces:
+        - application/json
+        - application/xml
+        - text/xml
+      responses:
+        '200':
+          description: List Freight Options
+          schema:
+            $ref: '#/definitions/ListFreightResponse'
+
+  /orders:
+    post:
+      description: Create Order
+      operationId: createOrder
+      tags:
+        - orders
+      security:
+        - ApiKeyAuth: []
+      parameters:
+        - in: body
+          name: data
+          required: true
+          schema:
+            $ref: '#/definitions/OrderData'
+      produces:
+        - application/json
+        - application/xml
+        - text/xml
+      responses:
+        '200':
+          description: Create Order Successful
+          schema:
+            $ref: '#/definitions/CreateOrderResponse'
+
+  /variants:
+    get:
+      description: List Variants
+      operationId: listVariants
+      tags:
+        - variants
+      security:
+        - ApiReadToken: []
+        - ApiKeyAuth: []
+      parameters:
+        - in: query
+          name: brandName
+          required: true
+          type: string
+        - in: query
+          name: styleNo
+          required: false
+          type: string
+      produces:
+        - application/json
+        - application/xml
+        - text/xml
+      responses:
+        '200':
+          description: Lists Variants
+          schema:
+            $ref: '#/definitions/ListVariantsResponse'
+
+  /variants/{barcode}:
+    get:
+      description: List Variant based on Barcode
+      operationId: getVariant
+      tags:
+        - variants
+      security:
+        - ApiReadToken: []
+        - ApiKeyAuth: []
+      parameters:
+        - in: path
+          name: barcode
+          required: true
+          type: string
+        - in: query
+          name: brandName
+          required: true
+          type: string
+      produces:
+        - application/json
+        - application/xml
+        - text/xml
+      responses:
+        '200':
+          description: Lists Variant
+          schema:
+            $ref: '#/definitions/ListVariantResponse'
 
 definitions:
   StyleVariant:
