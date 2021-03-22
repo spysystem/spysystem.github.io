@@ -44,8 +44,17 @@ info:
         - Gender
     - 1.2.14
       - Added variantType to Variant
+    - 1.2.17
+      - Added endpoint for getting a single delivery
+      - Added more information to Variants
+        - B2B Hidden
+        - Color Active
+        - Tags
+        - Customs Tariff Number
+        - Country of Origin
+        - Weight
 
-  version: 1.2.15
+  version: 1.2.17
   contact:
     email: info@spysystem.dk
 
@@ -56,7 +65,7 @@ info:
 
   license:
     name: Apache 2.9
-    url: http://www.apache.org/licenses/LICENSE-2.0.html
+    url: https://www.apache.org/licenses/LICENSE-2.0.html
 
 host: demo.spysystem.dk
 basePath: /api/v1
@@ -74,11 +83,22 @@ securityDefinitions:
     in: header
     name: X-Spy-ReadToken
 
+tags:
+  - name: brands
+  - name: freight
+  - name: orders
+  - name: variants
+
 paths:
   /auth/login:
     post:
       description: Authenticate with Spy
       operationId: Authenticate
+      tags:
+        - brands
+        - freight
+        - orders
+        - variants
       parameters:
         - in: body
           name: data
@@ -167,6 +187,27 @@ paths:
           description: Delivery Status Changed Successfully
           schema:
             $ref: '#/definitions/DeliveryResponse'
+    get:
+      description: Delivery Details
+      operationId: deliveryDetails
+      tags:
+        - delivery
+      security:
+        - ApiKeyAuth: []
+      parameters:
+        - in: path
+          name: deliveryNo
+          required: true
+          type: string
+      produces:
+        - application/json
+        - application/xml
+        - text/xml
+      responses:
+        '200':
+          description: Delivery Details
+          schema:
+            $ref: '#/definitions/DeliveryDetailsResponse'
 
   /freight:
     get:
@@ -518,6 +559,12 @@ definitions:
       - category
       - wash
       - styleDescription
+      - b2bHidden
+      - colorActive
+      - tags
+      - customsTariffNumber
+      - countryOfOrigin
+      - weight
     properties:
       'barcode':
         type: string
@@ -559,7 +606,20 @@ definitions:
       'images':
         type: array
         items:
-          $ref: '#/definitions/Image'
+          type: string
+      'b2bHidden':
+        type: boolean
+      'colorActive':
+        type: boolean
+      'tags':
+        type: string
+      'customsTariffNumber':
+        type: string
+      'countryOfOrigin':
+        type: string
+      'weight':
+        type: number
+        description: Gram
 
   CreateOrderResponseData:
     type: object
@@ -610,6 +670,24 @@ definitions:
         type: array
         items:
           type: string
+
+  DeliveryDetailsResponse:
+    allOf:
+      - $ref: '#/definitions/Response'
+      - type: object
+        required:
+          - data
+        properties:
+          'data':
+            $ref: '#/definitions/DeliveryDetailsResponseData'
+
+  DeliveryDetailsResponseData:
+    type: object
+    required:
+      - delivery
+    properties:
+      'delivery':
+          $ref: '#/definitions/Delivery'
 
   DeliveriesResponseData:
     type: object
