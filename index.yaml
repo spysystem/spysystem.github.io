@@ -22,7 +22,7 @@ info:
 
     By changing the [delivery](#tag/delivery) status to *accepted*, will notice the spy system that it is ok for being delivered and invoiced.
 
-    By changing the status to *rejected* will cancel the [delivery](#tag/delivery) and make it immuteable. A new [delivery](#tag/delivery) is required for it to being delivered (**NOT** a new order).
+    By changing the status to *rejected* will cancel the [delivery](#tag/delivery) and make it immutable. A new [delivery](#tag/delivery) is required for it to being delivered (**NOT** a new order).
 
     It is possible to change status from *accepted* to pending and vice versa, but *rejected* is locking it.
 
@@ -107,7 +107,7 @@ paths:
             $ref: '#/definitions/AuthenticateData'
       responses:
         '200':
-          description: Authentication successfull - authorization token in response data
+          description: Authentication successful - authorization token in response data
           schema:
             $ref: '#/definitions/AuthenticateResponse'
 
@@ -335,14 +335,6 @@ definitions:
         items:
           $ref: '#/definitions/VariantLine'
 
-  Image:
-    type: object
-    required:
-      - url
-    properties:
-      'url':
-        type: string
-
   VariantLine:
     type: object
     required:
@@ -553,7 +545,6 @@ definitions:
       - price
       - currency
       - images
-      - tags
       - gender
       - type
       - category
@@ -586,7 +577,7 @@ definitions:
       'size':
         type: string
       'quantity':
-        type: number
+        type: integer
       'price':
         type: number
       'currency':
@@ -618,7 +609,7 @@ definitions:
       'countryOfOrigin':
         type: string
       'weight':
-        type: number
+        type: integer
         description: Gram
 
   CreateOrderResponseData:
@@ -628,7 +619,7 @@ definitions:
       - orderStatus
     properties:
       'orderId':
-        type: number
+        type: integer
       'orderStatus':
         type: string
 
@@ -639,7 +630,7 @@ definitions:
         - status
       properties:
         'deliveryNo':
-          type: number
+          type: string
         'status':
           type: string
           enum:
