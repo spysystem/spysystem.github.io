@@ -27,6 +27,8 @@ info:
     It is possible to change status from *accepted* to pending and vice versa, but *rejected* is locking it.
 
     # CHANGELOG
+    - 1.2.37
+      - Added wspPrice to Variant
     - 1.2.6
       - Added Variants endpoint
       - Added Delivery endpoint
@@ -54,7 +56,7 @@ info:
         - Country of Origin
         - Weight
 
-  version: 1.2.17
+  version: 1.2.37
   contact:
     email: info@spysystem.dk
 
@@ -543,6 +545,7 @@ definitions:
       - size
       - quantity
       - price
+      - wspPrice
       - currency
       - images
       - gender
@@ -579,6 +582,8 @@ definitions:
       'quantity':
         type: integer
       'price':
+        type: number
+      'wspPrice':
         type: number
       'currency':
         type: string
