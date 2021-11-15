@@ -27,6 +27,8 @@ info:
     It is possible to change status from *accepted* to pending and vice versa, but *rejected* is locking it.
 
     # CHANGELOG
+    - 1.2.38
+      - Added seasonName to Variant
     - 1.2.37
       - Added wspPrice to Variant
     - 1.2.6
@@ -56,7 +58,7 @@ info:
         - Country of Origin
         - Weight
 
-  version: 1.2.37
+  version: 1.2.38
   contact:
     email: info@spysystem.dk
 
@@ -559,6 +561,7 @@ definitions:
       - customsTariffNumber
       - countryOfOrigin
       - weight
+      - seasonName
     properties:
       'barcode':
         type: string
@@ -616,6 +619,8 @@ definitions:
       'weight':
         type: integer
         description: Gram
+      'seasonName':
+        type: string
 
   CreateOrderResponseData:
     type: object
