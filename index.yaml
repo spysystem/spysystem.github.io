@@ -27,6 +27,10 @@ info:
     It is possible to change status from *accepted* to pending and vice versa, but *rejected* is locking it.
 
     # CHANGELOG
+    - 1.2.54
+      - Added warehouseCode to Freight
+    - 1.2.50
+      - Added priceOriginal to Variant
     - 1.2.38
       - Added seasonName to Variant
     - 1.2.37
@@ -586,6 +590,8 @@ definitions:
         type: integer
       'price':
         type: number
+      'priceOriginal':
+        type: number
       'wspPrice':
         type: number
       'currency':
@@ -659,6 +665,9 @@ definitions:
         type: string
       'parcelShopId':
         type: string
+      'warehouseCode':
+        type: string
+        description: If the freightType is '', then this field can be used to specify a freight code sent to an external warehouse
 
   TrackAndTrace:
     type: object
