@@ -27,10 +27,16 @@ info:
     It is possible to change status from *accepted* to pending and vice versa, but *rejected* is locking it.
 
     # CHANGELOG
+    - 1.2.56
+      - Addded colorCode and carelabel (careLabelWash, careLabelIron, careLabelDry, careLabelDryClean, careLabelBleach) to Variant
+    - 1.2.55
+      - shippingAddress is no longer required on OrderData
     - 1.2.54
       - Added warehouseCode to Freight
     - 1.2.50
       - Added priceOriginal to Variant
+    - 1.2.45
+      - Added designer to Style
     - 1.2.38
       - Added seasonName to Variant
     - 1.2.37
@@ -62,7 +68,7 @@ info:
         - Country of Origin
         - Weight
 
-  version: 1.2.38
+  version: 1.2.56
   contact:
     email: info@spysystem.dk
 
@@ -317,6 +323,7 @@ paths:
             $ref: '#/definitions/ListVariantResponse'
 
 definitions:
+  #region BaseEntities
   StyleVariant:
     type: object
     required:
@@ -353,7 +360,9 @@ definitions:
         $ref: '#/definitions/StyleVariant'
       'qty':
         type: integer
+  #endregion
 
+  #region Basic
   Response:
     type: object
     required:
@@ -364,7 +373,9 @@ definitions:
         type: integer
       'message':
         type: string
+  #endregion
 
+  #region Authentication
   AuthenticateResponseData:
     type: object
     required:
@@ -392,6 +403,7 @@ definitions:
         type: string
       'clientSecret':
         type: string
+  #endregion
 
   ListVariantsResponseData:
     type: object
@@ -437,7 +449,6 @@ definitions:
   OrderData:
     type: object
     required:
-      - shippingAddress
       - orderLineItems
       - reference
       - freight
@@ -547,6 +558,7 @@ definitions:
       - brandName
       - styleName
       - styleNameWebshop
+      - colorCode
       - colorName
       - size
       - quantity
@@ -581,6 +593,8 @@ definitions:
       'styleName':
         type: string
       'styleNameWebshop':
+        type: string
+      'colorCode':
         type: string
       'colorName':
         type: string
@@ -626,6 +640,16 @@ definitions:
         type: integer
         description: Gram
       'seasonName':
+        type: string
+      'careLabelWash':
+        type: string
+      'careLabelIron':
+        type: string
+      'careLabelDry':
+        type: string
+      'careLabelDryClean':
+        type: string
+      'careLabelBleach':
         type: string
 
   CreateOrderResponseData:
