@@ -28,7 +28,7 @@ info:
 
     # CHANGELOG
     - 1.2.56
-      - Addded colorCode and carelabel (careLabelWash, careLabelIron, careLabelDry, careLabelDryClean, careLabelBleach) to Variant
+      - Added colorCode and care label (careLabelWash, careLabelIron, careLabelDry, careLabelDryClean, careLabelBleach) to Variant
     - 1.2.55
       - shippingAddress is no longer required on OrderData
     - 1.2.54
