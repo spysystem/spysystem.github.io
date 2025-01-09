@@ -26,6 +26,19 @@ info:
 
     It is possible to change status from *accepted* to pending and vice versa, but *rejected* is locking it.
 
+    # New Webhook Model
+    We've introduced a new webhook model from version 1.3.0.
+
+    The new model uses [Svix](https://www.svix.com/) as a layer between Spy and your service. Spy sends webhooks to Svix, where you can subscibe to those events and forward them to your own service.
+
+    Svix has a portal for each integration (like your service). You gain access to it by calling [`POST /webhook-portal`](#operation/createWebhookPortalAccessURL), which will return a single-use link.
+    
+    If you later need access again, then just call [`POST /webhook-portal`](#operation/createWebhookPortalAccessURL) again.
+
+    In the portal you can configure endpoints - and for each endpoint you can define the events you'll subscibe to.
+    
+    You can also find a list of events received and sent, and resend any if you need to.
+
     # CHANGELOG
     - 1.3.0
       - Some schemas has changed name
