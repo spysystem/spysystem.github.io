@@ -156,8 +156,8 @@ paths:
   /delivery:
     get:
       deprecated: true
-      summary: Use /orders/{orderId}/deliveries instead
-      description: List Deliveries
+      summary: List Deliveries
+      description: Use /orders/{orderId}/deliveries instead
       operationId: listDeliveries
       tags:
         - orders
@@ -194,8 +194,8 @@ paths:
   /delivery/{deliveryNo}:
     post:
       deprecated: true
-      summary: Use /orders/{orderId}/deliveries/{orderDeliveryId} instead
-      description: Delivery Status
+      summary: Delivery Status
+      description: Use /orders/{orderId}/deliveries/{orderDeliveryId} instead
       operationId: deliveryStatus
       tags:
         - orders
@@ -224,8 +224,8 @@ paths:
                 $ref: '#/components/schemas/DeliveryResponse'
     get:
       deprecated: true
-      summary: Use /orders/{orderId}/deliveries/{orderDeliveryId} instead
-      description: Delivery Details
+      summary: Delivery Details
+      description: Use /orders/{orderId}/deliveries/{orderDeliveryId} instead
       operationId: deliveryDetails
       tags:
         - orders
