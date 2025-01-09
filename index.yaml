@@ -1,4 +1,4 @@
-swagger: '2.0'
+openapi: 3.1.0
 
 info:
   title: API Documentation for SPY Systems
@@ -27,6 +27,21 @@ info:
     It is possible to change status from *accepted* to pending and vice versa, but *rejected* is locking it.
 
     # CHANGELOG
+    - 1.3.0
+      - Some schemas has changed name
+      - Added new endpoints for handling orders
+        - GET /orders
+        - GET /orders/{orderId}
+        - GET /orders/{orderId}/deliveries
+        - GET /orders/{orderId}/deliveries/{orderDeliveryId}
+        - POST /orders/{orderId}/deliveries/{orderDeliveryId}
+        - GET /orders/{orderId}/refunds
+        - GET /orders/{orderId}/refunds/{orderRefundId}
+        - POST /orders/{orderId}/refunds/{orderRefundId}
+      - Added a new webhook model (beta)
+        - Requires explicit access given in Spy
+        - Gain access to portal by doing POST /webhook-portal
+        - Webhooks are now documented here
     - 1.2.56
       - Added colorCode and care label (careLabelWash, careLabelIron, careLabelDry, careLabelDryClean, careLabelBleach) to Variant
     - 1.2.55
@@ -68,7 +83,7 @@ info:
         - Country of Origin
         - Weight
 
-  version: 1.2.56
+  version: 1.3.0
   contact:
     email: info@spysystem.dk
 
@@ -81,27 +96,15 @@ info:
     name: Apache 2.9
     url: https://www.apache.org/licenses/LICENSE-2.0.html
 
-host: demo.spysystem.dk
-basePath: /api/v1
-schemes:
-  - https
-
-securityDefinitions:
-  ApiKeyAuth:
-    type: apiKey
-    in: header
-    name: X-Spy-Authorization
-
-  ApiReadToken:
-    type: apiKey
-    in: header
-    name: X-Spy-ReadToken
+servers:
+  - url: https://demo.spysystem.dk/api/v1
 
 tags:
   - name: brands
   - name: freight
   - name: orders
   - name: variants
+  - name: webhook
 
 paths:
   /auth/login:
@@ -113,17 +116,16 @@ paths:
         - freight
         - orders
         - variants
-      parameters:
-        - in: body
-          name: data
-          required: true
-          schema:
-            $ref: '#/definitions/AuthenticateData'
+        - webhook
+      requestBody:
+        $ref: '#/components/requestBodies/AuthenticateData'
       responses:
-        '200':
+        200:
           description: Authentication successful - authorization token in response data
-          schema:
-            $ref: '#/definitions/AuthenticateResponse'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthenticateResponse'
 
   /brands:
     get:
@@ -134,15 +136,19 @@ paths:
       security:
         - ApiReadToken: []
         - ApiKeyAuth: []
-      produces:
-        - application/json
-        - application/xml
-        - text/xml
       responses:
-        '200':
+        200:
           description: Lists Brands
-          schema:
-            $ref: '#/definitions/ListBrandsResponse'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ListBrandsResponse'
+            application/xml:
+              schema:
+                $ref: '#/components/schemas/ListBrandsResponse'
+            text/xml:
+              schema:
+                $ref: '#/components/schemas/ListBrandsResponse'
 
   /delivery:
     get:
@@ -158,21 +164,27 @@ paths:
           name: from
           description: From Date
           required: false
-          type: string
+          schema:
+            type: string
         - in: query
           name: to
           description: To Date
           required: false
-          type: string
-      produces:
-        - application/json
-        - application/xml
-        - text/xml
-      responses:
-        '200':
-          description: Lists Deliveries
           schema:
-            $ref: '#/definitions/DeliveriesResponse'
+            type: string
+      responses:
+        200:
+          description: Lists Deliveries
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DeliveriesResponse'
+            application/xml:
+              schema:
+                $ref: '#/components/schemas/DeliveriesResponse'
+            text/xml:
+              schema:
+                $ref: '#/components/schemas/DeliveriesResponse'
 
   /delivery/{deliveryNo}:
     post:
@@ -186,21 +198,23 @@ paths:
         - in: path
           name: deliveryNo
           required: true
-          type: string
-        - in: body
-          name: data
-          required: true
           schema:
-            $ref: '#/definitions/DeliveryData'
-      produces:
-        - application/json
-        - application/xml
-        - text/xml
+            type: string
+      requestBody:
+        $ref: '#/components/requestBodies/UpdateDeliveryStatus'
       responses:
-        '200':
+        200:
           description: Delivery Status Changed Successfully
-          schema:
-            $ref: '#/definitions/DeliveryResponse'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DeliveryResponse'
+            application/xml:
+              schema:
+                $ref: '#/components/schemas/DeliveryResponse'
+            text/xml:
+              schema:
+                $ref: '#/components/schemas/DeliveryResponse'
     get:
       description: Delivery Details
       operationId: deliveryDetails
@@ -212,16 +226,21 @@ paths:
         - in: path
           name: deliveryNo
           required: true
-          type: string
-      produces:
-        - application/json
-        - application/xml
-        - text/xml
-      responses:
-        '200':
-          description: Delivery Details
           schema:
-            $ref: '#/definitions/DeliveryDetailsResponse'
+            type: string
+      responses:
+        200:
+          description: Delivery Details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DeliveryDetailsResponse'
+            application/xml:
+              schema:
+                $ref: '#/components/schemas/DeliveryDetailsResponse'
+            text/xml:
+              schema:
+                $ref: '#/components/schemas/DeliveryDetailsResponse'
 
   /freight:
     get:
@@ -232,39 +251,418 @@ paths:
       security:
         - ApiReadToken: []
         - ApiKeyAuth: []
-      produces:
-        - application/json
-        - application/xml
-        - text/xml
       responses:
-        '200':
+        200:
           description: List Freight Options
-          schema:
-            $ref: '#/definitions/ListFreightResponse'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ListFreightResponse'
+            application/xml:
+              schema:
+                $ref: '#/components/schemas/ListFreightResponse'
+            text/xml:
+              schema:
+                $ref: '#/components/schemas/ListFreightResponse'
 
   /orders:
-    post:
-      description: Create Order
-      operationId: createOrder
+    get:
+      description: List Sales Orders
+      operationId: listSalesOrders
       tags:
         - orders
       security:
         - ApiKeyAuth: []
       parameters:
-        - in: body
-          name: data
-          required: true
+        - in: query
+          name: beforeOrderId
           schema:
-            $ref: '#/definitions/OrderData'
-      produces:
-        - application/json
-        - application/xml
-        - text/xml
+            type: integer
       responses:
-        '200':
-          description: Create Order Successful
-          schema:
-            $ref: '#/definitions/CreateOrderResponse'
+        200:
+          description: List of orders
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ListSalesOrdersResponse'
+            application/xml:
+              schema:
+                $ref: '#/components/schemas/ListSalesOrdersResponse'
+            text/xml:
+              schema:
+                $ref: '#/components/schemas/ListSalesOrdersResponse'
+    post:
+      description: Create Sales Order
+      operationId: createSalesOrder
+      tags:
+        - orders
+      security:
+        - ApiKeyAuth: []
+      requestBody:
+        $ref: '#/components/requestBodies/CreateSalesOrderData'
+      responses:
+        200:
+          description: Create Sales Order Successful
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreateOrderResponse'
+            application/xml:
+              schema:
+                $ref: '#/components/schemas/CreateOrderResponse'
+            text/xml:
+              schema:
+                $ref: '#/components/schemas/CreateOrderResponse'
+
+  /orders/{orderId}:
+    parameters:
+      - in: path
+        name: orderId
+        required: true
+        schema:
+          type: integer
+    get:
+      description: Get a Sales Order
+      operationId: getSalesOrder
+      tags:
+        - orders
+      security:
+        - ApiKeyAuth: []
+      responses:
+        200:
+          description: Get sales order
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetSalesOrderResponse'
+            application/xml:
+              schema:
+                $ref: '#/components/schemas/GetSalesOrderResponse'
+            text/xml:
+              schema:
+                $ref: '#/components/schemas/GetSalesOrderResponse'
+        404:
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EmptyResponse'
+            application/xml:
+              schema:
+                $ref: '#/components/schemas/EmptyResponse'
+            text/xml:
+              schema:
+                $ref: '#/components/schemas/EmptyResponse'
+
+  /orders/{orderId}/deliveries:
+    parameters:
+      - in: path
+        name: orderId
+        required: true
+        schema:
+          type: integer
+    get:
+      description: List sales order deliveries
+      operationId: listSalesOrderDeliveries
+      tags:
+        - orders
+      security:
+        - ApiKeyAuth: []
+      responses:
+        200:
+          description: List of deliveries for the sales order
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ListSalesOrderDeliveriesResponse'
+            application/xml:
+              schema:
+                $ref: '#/components/schemas/ListSalesOrderDeliveriesResponse'
+            text/xml:
+              schema:
+                $ref: '#/components/schemas/ListSalesOrderDeliveriesResponse'
+        404:
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EmptyResponse'
+            application/xml:
+              schema:
+                $ref: '#/components/schemas/EmptyResponse'
+            text/xml:
+              schema:
+                $ref: '#/components/schemas/EmptyResponse'
+
+  /orders/{orderId}/deliveries/{orderDeliveryId}:
+    parameters:
+      - in: path
+        name: orderId
+        required: true
+        schema:
+          type: integer
+      - in: path
+        name: orderDeliveryId
+        required: true
+        schema:
+          type: integer
+    get:
+      description: Get a Sales Order Delivery
+      operationId: getSalesOrderDelivery
+      tags:
+        - orders
+      security:
+        - ApiKeyAuth: []
+      responses:
+        200:
+          description: Get order
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetSalesOrderDeliveryResponse'
+            application/xml:
+              schema:
+                $ref: '#/components/schemas/GetSalesOrderDeliveryResponse'
+            text/xml:
+              schema:
+                $ref: '#/components/schemas/GetSalesOrderDeliveryResponse'
+        404:
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EmptyResponse'
+            application/xml:
+              schema:
+                $ref: '#/components/schemas/EmptyResponse'
+            text/xml:
+              schema:
+                $ref: '#/components/schemas/EmptyResponse'
+    post:
+      description: Delivery Status
+      operationId: updateSalesOrderDeliveryStatus
+      tags:
+        - orders
+      security:
+        - ApiKeyAuth: []
+      requestBody:
+        $ref: '#/components/requestBodies/UpdateSalesOrderDeliveryStatus'
+      responses:
+        200:
+          description: Delivery Status Changed Successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetSalesOrderDeliveryResponse'
+            application/xml:
+              schema:
+                $ref: '#/components/schemas/GetSalesOrderDeliveryResponse'
+            text/xml:
+              schema:
+                $ref: '#/components/schemas/GetSalesOrderDeliveryResponse'
+        403:
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EmptyResponse'
+            application/xml:
+              schema:
+                $ref: '#/components/schemas/EmptyResponse'
+            text/xml:
+              schema:
+                $ref: '#/components/schemas/EmptyResponse'
+        404:
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EmptyResponse'
+            application/xml:
+              schema:
+                $ref: '#/components/schemas/EmptyResponse'
+            text/xml:
+              schema:
+                $ref: '#/components/schemas/EmptyResponse'
+        409:
+          description: Conflict
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EmptyResponse'
+            application/xml:
+              schema:
+                $ref: '#/components/schemas/EmptyResponse'
+            text/xml:
+              schema:
+                $ref: '#/components/schemas/EmptyResponse'
+        422:
+          description: Unprocessable Entity
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InvalidDataResponse'
+            application/xml:
+              schema:
+                $ref: '#/components/schemas/InvalidDataResponse'
+            text/xml:
+              schema:
+                $ref: '#/components/schemas/InvalidDataResponse'
+
+  /orders/{orderId}/refunds:
+    parameters:
+      - in: path
+        name: orderId
+        required: true
+        schema:
+          type: integer
+    get:
+      description: List sales order refunds
+      operationId: listSalesOrderRefunds
+      tags:
+        - orders
+      security:
+        - ApiKeyAuth: []
+      responses:
+        200:
+          description: List of refunds for the sales order
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ListSalesOrderRefundsResponse'
+            application/xml:
+              schema:
+                $ref: '#/components/schemas/ListSalesOrderRefundsResponse'
+            text/xml:
+              schema:
+                $ref: '#/components/schemas/ListSalesOrderRefundsResponse'
+        404:
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EmptyResponse'
+            application/xml:
+              schema:
+                $ref: '#/components/schemas/EmptyResponse'
+            text/xml:
+              schema:
+                $ref: '#/components/schemas/EmptyResponse'
+
+  /orders/{orderId}/refunds/{orderRefundId}:
+    parameters:
+      - in: path
+        name: orderId
+        required: true
+        schema:
+          type: integer
+      - in: path
+        name: orderRefundId
+        required: true
+        schema:
+          type: integer
+    get:
+      description: Get a Sales Order Refund
+      operationId: getSalesOrderRefund
+      tags:
+        - orders
+      security:
+        - ApiKeyAuth: []
+      responses:
+        200:
+          description: Get order
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetSalesOrderRefundResponse'
+            application/xml:
+              schema:
+                $ref: '#/components/schemas/GetSalesOrderRefundResponse'
+            text/xml:
+              schema:
+                $ref: '#/components/schemas/GetSalesOrderRefundResponse'
+        404:
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EmptyResponse'
+            application/xml:
+              schema:
+                $ref: '#/components/schemas/EmptyResponse'
+            text/xml:
+              schema:
+                $ref: '#/components/schemas/EmptyResponse'
+    post:
+      description: Refund Status
+      operationId: updateSalesOrderRefundStatus
+      tags:
+        - orders
+      security:
+        - ApiKeyAuth: []
+      requestBody:
+        $ref: '#/components/requestBodies/UpdateSalesOrderRefundStatus'
+      responses:
+        200:
+          description: Refund Status Changed Successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetSalesOrderRefundResponse'
+            application/xml:
+              schema:
+                $ref: '#/components/schemas/GetSalesOrderRefundResponse'
+            text/xml:
+              schema:
+                $ref: '#/components/schemas/GetSalesOrderRefundResponse'
+        403:
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EmptyResponse'
+            application/xml:
+              schema:
+                $ref: '#/components/schemas/EmptyResponse'
+            text/xml:
+              schema:
+                $ref: '#/components/schemas/EmptyResponse'
+        404:
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EmptyResponse'
+            application/xml:
+              schema:
+                $ref: '#/components/schemas/EmptyResponse'
+            text/xml:
+              schema:
+                $ref: '#/components/schemas/EmptyResponse'
+        409:
+          description: Conflict
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EmptyResponse'
+            application/xml:
+              schema:
+                $ref: '#/components/schemas/EmptyResponse'
+            text/xml:
+              schema:
+                $ref: '#/components/schemas/EmptyResponse'
+        422:
+          description: Unprocessable Entity
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InvalidDataResponse'
+            application/xml:
+              schema:
+                $ref: '#/components/schemas/InvalidDataResponse'
+            text/xml:
+              schema:
+                $ref: '#/components/schemas/InvalidDataResponse'
 
   /variants:
     get:
@@ -279,20 +677,26 @@ paths:
         - in: query
           name: brandName
           required: true
-          type: string
+          schema:
+            type: string
         - in: query
           name: styleNo
           required: false
-          type: string
-      produces:
-        - application/json
-        - application/xml
-        - text/xml
-      responses:
-        '200':
-          description: Lists Variants
           schema:
-            $ref: '#/definitions/ListVariantsResponse'
+            type: string
+      responses:
+        200:
+          description: Lists Variants
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ListVariantsResponse'
+            application/xml:
+              schema:
+                $ref: '#/components/schemas/ListVariantsResponse'
+            text/xml:
+              schema:
+                $ref: '#/components/schemas/ListVariantsResponse'
 
   /variants/{barcode}:
     get:
@@ -307,518 +711,1376 @@ paths:
         - in: path
           name: barcode
           required: true
-          type: string
+          schema:
+            type: string
         - in: query
           name: brandName
           required: true
-          type: string
-      produces:
-        - application/json
-        - application/xml
-        - text/xml
-      responses:
-        '200':
-          description: Lists Variant
           schema:
-            $ref: '#/definitions/ListVariantResponse'
+            type: string
+      responses:
+        200:
+          description: Lists Variant
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ListVariantResponse'
+            application/xml:
+              schema:
+                $ref: '#/components/schemas/ListVariantResponse'
+            text/xml:
+              schema:
+                $ref: '#/components/schemas/ListVariantResponse'
 
-definitions:
-  #region BaseEntities
-  StyleVariant:
-    type: object
-    required:
-      - name
-      - type
-      - barcode
-      - qtyInVariant
-    properties:
-      'name':
-        type: string
-      'type':
-        type: string
-        enum:
-          - size
-          - assortment
-      'barcode':
-        type: string
-      'qtyInVariant':
-        description: If StyleVariant is of type assortment, each variant may contain multiple qties
-        type: integer
-      'variantsInVariant':
-        description: If StyleVariant is of type assortment, then this will show which items it contains
-        type: array
-        items:
-          $ref: '#/definitions/VariantLine'
+  /webhook-portal:
+    post:
+      description: Create webhook portal access URL
+      operationId: createWebhookPortalAccessURL
+      tags:
+        - webhook
+      security:
+        - ApiKeyAuth: []
+      responses:
+        200:
+          description: Created webhook portal access URL (single use)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetWebhookPortalAccessURLResponse'
+            application/xml:
+              schema:
+                $ref: '#/components/schemas/GetWebhookPortalAccessURLResponse'
+            text/xml:
+              schema:
+                $ref: '#/components/schemas/GetWebhookPortalAccessURLResponse'
 
-  VariantLine:
-    type: object
-    required:
-      - styleVariant
-      - qty
-    properties:
-      'styleVariant':
-        $ref: '#/definitions/StyleVariant'
-      'qty':
-        type: integer
-  #endregion
+components:
+  requestBodies:
+    AuthenticateData:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/AuthenticateData'
+      required: true
 
-  #region Basic
-  Response:
-    type: object
-    required:
-      - status
-      - message
-    properties:
-      'status':
-        type: integer
-      'message':
-        type: string
-  #endregion
+    #region Legacy Sales Deliveries
+    UpdateDeliveryStatus:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/DeliveryData'
+      required: true
+    #endregion
 
-  #region Authentication
-  AuthenticateResponseData:
-    type: object
-    required:
-      - token
-    properties:
-      'token':
-        type: string
-  AuthenticateResponse:
-    allOf:
-      - $ref: '#/definitions/Response'
-      - type: object
-        required:
-          - data
-        properties:
-          'data':
-            $ref: '#/definitions/AuthenticateResponseData'
+    #region Sales Orders
+    CreateSalesOrderData:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/SalesOrderCreate'
+      required: true
 
-  AuthenticateData:
-    type: object
-    required:
-      - clientID
-      - clientSecret
-    properties:
-      'clientID':
-        type: string
-      'clientSecret':
-        type: string
-  #endregion
+    UpdateSalesOrderDeliveryStatus:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/SalesOrderDeliveryStatusUpdate'
+      required: true
 
-  ListVariantsResponseData:
-    type: object
-    required:
-      - count
-      - variants
-    properties:
-      'count':
-        type: integer
-      'variants':
-        type: array
-        items:
-          $ref: '#/definitions/Variant'
+    UpdateSalesOrderRefundStatus:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/SalesOrderRefundStatusUpdate'
+      required: true
+    #endregion
 
-  ListVariantsResponse:
-    allOf:
-      - $ref: '#/definitions/Response'
-      - type: object
-        required:
-          - data
-        properties:
-          'data':
-            $ref: '#/definitions/ListVariantsResponseData'
+  securitySchemes:
+    ApiKeyAuth:
+      type: apiKey
+      in: header
+      name: X-Spy-Authorization
+    ApiReadToken:
+      type: apiKey
+      in: header
+      name: X-Spy-ReadToken
 
-  ListVariantResponseData:
-    type: object
-    required:
-      - variant
-    properties:
-      'variant':
-        $ref: '#/definitions/Variant'
-
-  ListVariantResponse:
-    allOf:
-      - $ref: '#/definitions/Response'
-      - type: object
-        required:
-          - data
-        properties:
-          'data':
-            $ref: '#/definitions/ListVariantResponseData'
-
-  OrderData:
-    type: object
-    required:
-      - orderLineItems
-      - reference
-      - freight
-    properties:
-      'shippingAddress':
-        $ref: '#/definitions/ShippingAddress'
-      'orderLineItems':
-        type: array
-        items:
-          $ref: '#/definitions/OrderLineItem'
-      'reference':
-        type: string
-      'comment':
-        type: string
-      'freight':
-        $ref: '#/definitions/Freight'
-
-  DeliveryData:
-    type: object
-    required:
-      - status
-    properties:
-      'status':
-        type: string
-        enum:
-          - pending
-          - accepted
-          - rejected
-
-  CreateOrderResponse:
-    allOf:
-      - $ref: '#/definitions/Response'
-      - type: object
-        required:
-          - data
-        properties:
-          'data':
-            $ref: '#/definitions/CreateOrderResponseData'
-
-  DeliveryResponse:
-    allOf:
-      - $ref: '#/definitions/Response'
-      - type: object
-        required:
-          - data
-        properties:
-          'data':
-            $ref: '#/definitions/DeliveryResponseData'
-
-  ShippingAddress:
-    type: object
-    required:
-      - address
-      - city
-      - zip
-      - countryCode
-      - firstName
-      - lastName
-      - phone
-      - email
-    properties:
-      'address':
-        type: string
-      'address2':
-        type: string
-      'city':
-        type: string
-      'company':
-        type: string
-      'country':
-        type: string
-      'countryCode':
-        type: string
-      'firstName':
-        type: string
-      'lastName':
-        type: string
-      'phone':
-        type: string
-      'email':
-        type: string
-      'provinceCode':
-        type: string
-      'zip':
-        type: string
-
-  OrderLineItem:
-    type: object
-    required:
-      - barcode
-      - quantity
-      - price
-    properties:
-      'barcode':
-        type: string
-      'quantity':
-        type: integer
-      'price':
-        type: number
-
-  Variant:
-    type: object
-    required:
-      - barcode
-      - variantType
-      - styleNo
-      - brandName
-      - styleName
-      - styleNameWebshop
-      - colorCode
-      - colorName
-      - size
-      - quantity
-      - price
-      - wspPrice
-      - currency
-      - images
-      - gender
-      - type
-      - category
-      - wash
-      - styleDescription
-      - b2bHidden
-      - colorActive
-      - tags
-      - customsTariffNumber
-      - countryOfOrigin
-      - weight
-      - seasonName
-    properties:
-      'barcode':
-        type: string
-      'variantType':
-        type: string
-        enum:
-          - size
-          - assortment
-      'styleNo':
-        type: string
-      'brandName':
-        type: string
-      'styleName':
-        type: string
-      'styleNameWebshop':
-        type: string
-      'colorCode':
-        type: string
-      'colorName':
-        type: string
-      'size':
-        type: string
-      'quantity':
-        type: integer
-      'price':
-        type: number
-      'priceOriginal':
-        type: number
-      'wspPrice':
-        type: number
-      'currency':
-        type: string
-      'styleDescription':
-        type: string
-      'wash':
-        type: string
-      'category':
-        type: string
-      'quality':
-        type: string
-      'type':
-        type: string
-      'gender':
-        type: string
-      'images':
-        type: array
-        items:
-          type: string
-      'b2bHidden':
-        type: boolean
-      'colorActive':
-        type: boolean
-      'tags':
-        type: string
-      'customsTariffNumber':
-        type: string
-      'countryOfOrigin':
-        type: string
-      'weight':
-        type: integer
-        description: Gram
-      'seasonName':
-        type: string
-      'careLabelWash':
-        type: string
-      'careLabelIron':
-        type: string
-      'careLabelDry':
-        type: string
-      'careLabelDryClean':
-        type: string
-      'careLabelBleach':
-        type: string
-
-  CreateOrderResponseData:
-    type: object
-    required:
-      - orderId
-      - orderStatus
-    properties:
-      'orderId':
-        type: integer
-      'orderStatus':
-        type: string
-
-  DeliveryResponseData:
+  schemas:
+    #region BaseEntities
+    StyleVariant:
       type: object
       required:
+        - name
+        - type
+        - barcode
+        - qtyInVariant
+      properties:
+        name:
+          type: string
+        type:
+          type: string
+          enum:
+            - size
+            - assortment
+        barcode:
+          type: string
+        qtyInVariant:
+          description: If StyleVariant is of type assortment, each variant may contain multiple qties
+          type: integer
+        variantsInVariant:
+          description: If StyleVariant is of type assortment, then this will show which items it contains
+          type: array
+          items:
+            $ref: '#/components/schemas/VariantLine'
+
+    VariantLine:
+      type: object
+      required:
+        - styleVariant
+        - qty
+      properties:
+        styleVariant:
+          $ref: '#/components/schemas/StyleVariant'
+        qty:
+          type: integer
+    #endregion
+
+    #region Basic
+    Response:
+      type: object
+      required:
+        - status
+        - message
+      properties:
+        status:
+          type: integer
+        message:
+          type: string
+
+    EmptyResponse:
+      allOf:
+        - $ref: '#/components/schemas/Response'
+        - type: object
+          required:
+            - data
+          properties:
+            data:
+              type: object
+
+    InvalidDataResponse:
+      allOf:
+        - $ref: '#/components/schemas/Response'
+        - type: object
+          required:
+            - invalid_data
+          properties:
+            invalid_data:
+              type: array
+              items:
+                type: string
+    #endregion
+
+    #region Authentication
+    AuthenticateResponseData:
+      type: object
+      required:
+        - token
+      properties:
+        token:
+          type: string
+    AuthenticateResponse:
+      allOf:
+        - $ref: '#/components/schemas/Response'
+        - type: object
+          required:
+            - data
+          properties:
+            data:
+              $ref: '#/components/schemas/AuthenticateResponseData'
+
+    AuthenticateData:
+      type: object
+      required:
+        - clientID
+        - clientSecret
+      properties:
+        clientID:
+          type: string
+        clientSecret:
+          type: string
+    #endregion
+
+    ListVariantsResponseData:
+      type: object
+      required:
+        - count
+        - variants
+      properties:
+        count:
+          type: integer
+        variants:
+          type: array
+          items:
+            $ref: '#/components/schemas/Variant'
+
+    ListVariantsResponse:
+      allOf:
+        - $ref: '#/components/schemas/Response'
+        - type: object
+          required:
+            - data
+          properties:
+            data:
+              $ref: '#/components/schemas/ListVariantsResponseData'
+
+    ListVariantResponseData:
+      type: object
+      required:
+        - variant
+      properties:
+        variant:
+          $ref: '#/components/schemas/Variant'
+
+    ListVariantResponse:
+      allOf:
+        - $ref: '#/components/schemas/Response'
+        - type: object
+          required:
+            - data
+          properties:
+            data:
+              $ref: '#/components/schemas/ListVariantResponseData'
+
+    #region Sales Orders
+    #region Schemas
+    SalesOrderShippingAddress:
+      type: object
+      required:
+        - address
+        - address2
+        - city
+        - company
+        - countryCode
+        - name
+        - phone
+        - email
+        - provinceCode
+        - zip
+        - accountNo
+      properties:
+        address:
+          type: string
+        address2:
+          type: string
+        city:
+          type: string
+        company:
+          type: string
+        countryCode:
+          type: string
+        name:
+          type: string
+        phone:
+          type: string
+        email:
+          type: string
+        provinceCode:
+          type: string
+        zip:
+          type: string
+        accountNo:
+          type: string
+
+    SalesOrderFreight:
+      type: object
+      required:
+        - freightAmount
+      properties:
+        freightAmount:
+          type: number
+        freightType:
+          type: string
+        parcelShopId:
+          type: string
+        warehouseCode:
+          type: string
+          description: If the freightType is '', then this field can be used to specify a freight code sent to an external warehouse
+
+    SalesOrderStatus:
+      type: string
+      enum:
+        - pending
+        - fulfilled
+        - partially_fulfilled
+        - canceled
+
+    SalesOrder:
+      type: object
+      required:
+        - orderId
+        - reference
+        - orderNo
+        - status
+        - completed
+        - comment
+        - orderLineItems
+        - shippingAddress
+        - freight
+      properties:
+        orderId:
+          type: integer
+        reference:
+          type: string
+        orderNo:
+          type: string
+        status:
+          $ref: '#/components/schemas/SalesOrderStatus'
+        completed:
+          type: boolean
+        comment:
+          type: string
+        orderLineItems:
+          type: array
+          items:
+            $ref: '#/components/schemas/SalesOrderLineItem'
+        shippingAddress:
+          $ref: '#/components/schemas/SalesOrderShippingAddress'
+        freight:
+          $ref: '#/components/schemas/SalesOrderFreight'
+
+    SalesOrderLineItem:
+      type: object
+      required:
+        - barcode
+        - quantity
+        - fulfilledQuantity
+        - sizeQuantity
+        - fulfilledSizeQuantity
+        - price
+      properties:
+        barcode:
+          type: string
+        quantity:
+          type: integer
+        fulfilledQuantity:
+          type: integer
+        sizeQuantity:
+          type: integer
+        fulfilledSizeQuantity:
+          type: integer
+        price:
+          type: number
+        season:
+          type: string
+        delivery:
+          type: string
+
+    SalesOrderDeliveryStatus:
+      type: string
+      enum:
+        - pending
+        - accepted
+        - rejected
+        - canceled
+
+    SalesOrderDelivery:
+      type: object
+      required:
+        - orderDeliveryId
         - deliveryNo
+        - orderId
+        - reference
+        - orderNo
+        - status
+        - fulfilledLineItems
+        - trackAndTrace
+      properties:
+        orderDeliveryId:
+          type: integer
+        deliveryNo:
+          type: string
+        orderId:
+          type: integer
+        reference:
+          type: string
+        orderNo:
+          type: string
+        status:
+          $ref: '#/components/schemas/SalesOrderDeliveryStatus'
+        fulfilledLineItems:
+          type: array
+          items:
+            $ref: '#/components/schemas/SalesOrderDeliveryLineItem'
+        trackAndTrace:
+          $ref: '#/components/schemas/TrackAndTrace'
+
+    SalesOrderDeliveryLineItem:
+      type: object
+      required:
+        - barcode
+        - fulfilledQuantity
+        - fulfilledSizeQuantity
+        - price
+      properties:
+        barcode:
+          type: string
+        fulfilledQuantity:
+          type: integer
+        fulfilledSizeQuantity:
+          type: integer
+        price:
+          type: number
+        season:
+          type: string
+        delivery:
+          type: string
+
+    SalesOrderRefundStatus:
+      type: string
+      enum:
+        - pending
+        - accepted
+        - rejected
+        - canceled
+
+    SalesOrderRefund:
+      type: object
+      required:
+        - orderRefundId
+        - refundNo
+        - orderId
+        - reference
+        - orderNo
+        - status
+        - refundedLineItems
+      properties:
+        orderRefundId:
+          type: integer
+        refundNo:
+          type: string
+        orderId:
+          type: integer
+        reference:
+          type: string
+        orderNo:
+          type: string
+        status:
+          $ref: '#/components/schemas/SalesOrderRefundStatus'
+        refundedLineItems:
+          type: array
+          items:
+            $ref: '#/components/schemas/SalesOrderRefundLineItem'
+
+    SalesOrderRefundLineItemType:
+      type: string
+      enum:
+        - claim/credit
+        - claim/replace
+        - claim/price_reduction
+        - return/credit
+        - price_reduction/credit
+
+    SalesOrderRefundLineItem:
+      type: object
+      required:
+        - barcode
+        - refundedQuantity
+        - refundedSizeQuantity
+        - price
+        - restock
+      properties:
+        barcode:
+          type: string
+        refundedQuantity:
+          type: integer
+        refundedSizeQuantity:
+          type: integer
+        price:
+          type: number
+        restock:
+          type: boolean
+        refundType:
+          $ref: '#/components/schemas/SalesOrderRefundLineItemType'
+    #endregion
+
+    #region Requests
+    SalesOrderCreate:
+      type: object
+      required:
+        - orderLineItems
+        - reference
+        - freight
+      properties:
+        shippingAddress:
+          $ref: '#/components/schemas/SalesOrderShippingAddressCreate'
+        orderLineItems:
+          type: array
+          items:
+            $ref: '#/components/schemas/SalesOrderLineItemCreate'
+        reference:
+          type: string
+        comment:
+          type: string
+        freight:
+          $ref: '#/components/schemas/SalesOrderFreight'
+
+    SalesOrderShippingAddressCreate:
+      type: object
+      required:
+        - address
+        - city
+        - zip
+        - countryCode
+        - firstName
+        - lastName
+        - phone
+        - email
+      properties:
+        address:
+          type: string
+        address2:
+          type: string
+        city:
+          type: string
+        company:
+          type: string
+        countryCode:
+          type: string
+        firstName:
+          type: string
+        lastName:
+          type: string
+        phone:
+          type: string
+        email:
+          type: string
+        provinceCode:
+          type: string
+        zip:
+          type: string
+        accountNo:
+          type: string
+
+    SalesOrderLineItemCreate:
+      type: object
+      required:
+        - barcode
+        - quantity
+        - price
+      properties:
+        barcode:
+          type: string
+        quantity:
+          type: integer
+        price:
+          type: number
+
+    SalesOrderDeliveryStatusUpdate:
+      type: object
+      required:
         - status
       properties:
-        'deliveryNo':
-          type: string
-        'status':
+        status:
           type: string
           enum:
             - pending
             - accepted
             - rejected
 
-  Freight:
-    type: object
-    required:
-      - freightAmount
-    properties:
-      'freightAmount':
-        type: number
-      'freightType':
-        type: string
-      'parcelShopId':
-        type: string
-      'warehouseCode':
-        type: string
-        description: If the freightType is '', then this field can be used to specify a freight code sent to an external warehouse
-
-  TrackAndTrace:
-    type: object
-    properties:
-      'trackingNumbers':
-        type: array
-        items:
+    SalesOrderRefundStatusUpdate:
+      type: object
+      required:
+        - status
+      properties:
+        status:
           type: string
-      'trackingLinks':
-        type: array
-        items:
+          enum:
+            - pending
+            - accepted
+            - rejected
+    #endregion
+
+    #region Responses
+    ListSalesOrdersResponseData:
+      type: object
+      required:
+        - orders
+      properties:
+        orders:
+          type: array
+          items:
+            $ref: '#/components/schemas/SalesOrder'
+    ListSalesOrdersResponse:
+      allOf:
+        - $ref: '#/components/schemas/Response'
+        - type: object
+          required:
+            - data
+          properties:
+            data:
+              $ref: '#/components/schemas/ListSalesOrdersResponseData'
+
+    GetSalesOrderResponse:
+      allOf:
+        - $ref: '#/components/schemas/Response'
+        - type: object
+          required:
+            - data
+          properties:
+            data:
+              $ref: '#/components/schemas/SalesOrder'
+
+    CreateSalesOrderResponseData:
+      type: object
+      required:
+        - orderId
+        - orderStatus
+      properties:
+        orderId:
+          type: integer
+        orderStatus:
+          type: string
+    CreateOrderResponse:
+      allOf:
+        - $ref: '#/components/schemas/Response'
+        - type: object
+          required:
+            - data
+          properties:
+            data:
+              $ref: '#/components/schemas/CreateSalesOrderResponseData'
+
+    ListSalesOrderDeliveriesResponseData:
+      type: object
+      required:
+        - deliveries
+      properties:
+        deliveries:
+          type: array
+          items:
+            $ref: '#/components/schemas/SalesOrderDelivery'
+    ListSalesOrderDeliveriesResponse:
+      allOf:
+        - $ref: '#/components/schemas/Response'
+        - type: object
+          required:
+            - data
+          properties:
+            data:
+              $ref: '#/components/schemas/ListSalesOrderDeliveriesResponseData'
+
+    GetSalesOrderDeliveryResponse:
+      allOf:
+        - $ref: '#/components/schemas/Response'
+        - type: object
+          required:
+            - data
+          properties:
+            data:
+              $ref: '#/components/schemas/SalesOrderDelivery'
+
+    ListSalesOrderRefundsResponseData:
+      type: object
+      required:
+        - refunds
+      properties:
+        refunds:
+          type: array
+          items:
+            $ref: '#/components/schemas/SalesOrderRefund'
+    ListSalesOrderRefundsResponse:
+      allOf:
+        - $ref: '#/components/schemas/Response'
+        - type: object
+          required:
+            - data
+          properties:
+            data:
+              $ref: '#/components/schemas/ListSalesOrderRefundsResponseData'
+
+    GetSalesOrderRefundResponse:
+      allOf:
+        - $ref: '#/components/schemas/Response'
+        - type: object
+          required:
+            - data
+          properties:
+            data:
+              $ref: '#/components/schemas/SalesOrderRefund'
+    #endregion
+    #endregion
+
+    #region Webhook Portal
+    #region Responses
+    GetWebhookPortalAccessURLResponseData:
+      type: object
+      required:
+        - url
+        - expiresAt
+      properties:
+        url:
+          type: string
+        expiresAt:
+          type: string
+    GetWebhookPortalAccessURLResponse:
+      allOf:
+        - $ref: '#/components/schemas/Response'
+        - type: object
+          required:
+            - data
+          properties:
+            data:
+              $ref: '#/components/schemas/GetWebhookPortalAccessURLResponseData'
+    #endregion
+    #endregion
+
+    Variant:
+      type: object
+      required:
+        - barcode
+        - variantType
+        - styleNo
+        - brandName
+        - styleName
+        - styleNameWebshop
+        - colorCode
+        - colorName
+        - size
+        - quantity
+        - price
+        - wspPrice
+        - currency
+        - images
+        - gender
+        - type
+        - category
+        - wash
+        - styleDescription
+        - b2bHidden
+        - colorActive
+        - tags
+        - customsTariffNumber
+        - countryOfOrigin
+        - weight
+        - seasonName
+      properties:
+        barcode:
+          type: string
+        variantType:
+          type: string
+          enum:
+            - size
+            - assortment
+        styleNo:
+          type: string
+        brandName:
+          type: string
+        styleName:
+          type: string
+        styleNameWebshop:
+          type: string
+        colorCode:
+          type: string
+        colorName:
+          type: string
+        size:
+          type: string
+        quantity:
+          type: integer
+        price:
+          type: number
+        priceOriginal:
+          type: number
+        wspPrice:
+          type: number
+        currency:
+          type: string
+        styleDescription:
+          type: string
+        wash:
+          type: string
+        category:
+          type: string
+        quality:
+          type: string
+        type:
+          type: string
+        gender:
+          type: string
+        images:
+          type: array
+          items:
+            type: string
+        b2bHidden:
+          type: boolean
+        colorActive:
+          type: boolean
+        tags:
+          type: string
+        customsTariffNumber:
+          type: string
+        countryOfOrigin:
+          type: string
+        weight:
+          type: integer
+          description: Gram
+        seasonName:
+          type: string
+        careLabelWash:
+          type: string
+        careLabelIron:
+          type: string
+        careLabelDry:
+          type: string
+        careLabelDryClean:
+          type: string
+        careLabelBleach:
           type: string
 
-  DeliveryDetailsResponse:
-    allOf:
-      - $ref: '#/definitions/Response'
-      - type: object
+    #region Legacy Sales Deliveries
+    #region Schemas
+    Delivery:
+      type: object
+      required:
+        - deliveryNo
+        - status
+        - variants
+      properties:
+        deliveryNo:
+          type: string
+        status:
+          type: string
+        variants:
+          type: array
+          items:
+            $ref: '#/components/schemas/Variant'
+        trackAndTrace:
+          $ref: '#/components/schemas/TrackAndTrace'
+
+    TrackAndTrace:
+      type: object
+      properties:
+        trackingNumbers:
+          type: array
+          items:
+            type: string
+        trackingLinks:
+          type: array
+          items:
+            type: string
+    #endregion
+
+    #region Requests
+    DeliveryData:
+      type: object
+      required:
+        - status
+      properties:
+        status:
+          type: string
+          enum:
+            - pending
+            - accepted
+            - rejected
+    #endregion
+
+    #region Responses
+    DeliveriesResponseData:
+      type: object
+      required:
+        - count
+        - deliveries
+      properties:
+        count:
+          type: integer
+        deliveries:
+          type: array
+          items:
+            $ref: '#/components/schemas/Delivery'
+    DeliveriesResponse:
+      allOf:
+        - $ref: '#/components/schemas/Response'
+        - type: object
+          required:
+            - data
+          properties:
+            data:
+              $ref: '#/components/schemas/DeliveriesResponseData'
+
+    DeliveryResponseData:
+        type: object
         required:
-          - data
+          - deliveryNo
+          - status
         properties:
-          'data':
-            $ref: '#/definitions/DeliveryDetailsResponseData'
+          deliveryNo:
+            type: string
+          status:
+            type: string
+            enum:
+              - pending
+              - accepted
+              - rejected
+    DeliveryResponse:
+      allOf:
+        - $ref: '#/components/schemas/Response'
+        - type: object
+          required:
+            - data
+          properties:
+            data:
+              $ref: '#/components/schemas/DeliveryResponseData'
 
-  DeliveryDetailsResponseData:
-    type: object
-    required:
-      - delivery
-    properties:
-      'delivery':
-          $ref: '#/definitions/Delivery'
+    DeliveryDetailsResponseData:
+      type: object
+      required:
+        - delivery
+      properties:
+        delivery:
+            $ref: '#/components/schemas/Delivery'
+    DeliveryDetailsResponse:
+      allOf:
+        - $ref: '#/components/schemas/Response'
+        - type: object
+          required:
+            - data
+          properties:
+            data:
+              $ref: '#/components/schemas/DeliveryDetailsResponseData'
+    #endregion
+    #endregion
 
-  DeliveriesResponseData:
-    type: object
-    required:
-      - count
-      - deliveries
-    properties:
-      'count':
-        type: integer
-      'deliveries':
-        type: array
-        items:
-          $ref: '#/definitions/Delivery'
+    ListBrandsResponse:
+      allOf:
+        - $ref: '#/components/schemas/Response'
+        - type: object
+          required:
+            - data
+          properties:
+            data:
+              $ref: '#/components/schemas/ListBrandsResponseData'
+    ListBrandsResponseData:
+      type: object
+      required:
+        - count
+        - brands
+      properties:
+        count:
+          type: integer
+        brands:
+          type: array
+          items:
+            $ref: '#/components/schemas/Brand'
+    Brand:
+      type: object
+      required:
+        - brandName
+      properties:
+        brandName:
+          type: string
 
-  DeliveriesResponse:
-    allOf:
-      - $ref: '#/definitions/Response'
-      - type: object
-        required:
-          - data
-        properties:
-          'data':
-            $ref: '#/definitions/DeliveriesResponseData'
+    ListFreightResponse:
+      allOf:
+        - $ref: '#/components/schemas/Response'
+        - type: object
+          required:
+            - data
+          properties:
+            data:
+              $ref: '#/components/schemas/ListFreightResponseData'
 
-  Delivery:
-    type: object
-    required:
-      - deliveryNo
-      - status
-      - variants
-    properties:
-      'deliveryNo':
-        type: string
-      'status':
-        type: string
-      'variants':
-        type: array
-        items:
-          $ref: '#/definitions/Variant'
-      'trackAndTrace':
-        items:
-          $ref: '#/definitions/TrackAndTrace'
+    ListFreightResponseData:
+      type: object
+      required:
+        - count
+        - freightOptions
+      properties:
+        count:
+          type: integer
+        freightOptions:
+          type: array
+          items:
+            $ref: '#/components/schemas/FreightOption'
 
-  ListBrandsResponse:
-    allOf:
-      - $ref: '#/definitions/Response'
-      - type: object
-        required:
-          - data
-        properties:
-          'data':
-            $ref: '#/definitions/ListBrandsResponseData'
-  ListBrandsResponseData:
-    type: object
-    required:
-      - count
-      - brands
-    properties:
-      'count':
-        type: integer
-      'brands':
-        type: array
-        items:
-          $ref: '#/definitions/Brand'
-  Brand:
-    type: object
-    required:
-      - brandName
-    properties:
-      'brandName':
-        type: string
+    FreightOption:
+      type: object
+      properties:
+        freightType:
+          type: string
 
-  ListFreightResponse:
-    allOf:
-      - $ref: '#/definitions/Response'
-      - type: object
-        required:
-          - data
-        properties:
-          'data':
-            $ref: '#/definitions/ListFreightResponseData'
+    #region Webhooks
+    WebhookReferences:
+      type: object
+      properties:
+        systemKey:
+          type: string
+        apiKeyId:
+          type: integer
+        jobId:
+          type: integer
+        idempotencyKey:
+          type: string
+        reference:
+          type: string
 
-  ListFreightResponseData:
-    type: object
-    required:
-      - count
-      - freightOptions
-    properties:
-      'count':
-        type: integer
-      'freightOptions':
-        type: array
-        items:
-          $ref: '#/definitions/FreightOption'
+    #region Ping
+    PingWebhookData:
+      type: object
+      required:
+        - ping
+      properties:
+        ping:
+          type: string
+    PingWebhook:
+      type: object
+      required:
+        - type
+        - data
+      properties:
+        type:
+          type: string
+          enum:
+            - ping
+          default: ping
+        data:
+          $ref: '#/components/schemas/PingWebhookData'
+        references:
+          $ref: '#/components/schemas/WebhookReferences'
+    #endregion
 
-  FreightOption:
-    type: object
-    properties:
-      'freightType':
-        type: string
+    #region Order
+    SalesOrderCreatedWebhookData:
+      type: object
+      required:
+        - salesOrder
+      properties:
+        salesOrder:
+          $ref: '#/components/schemas/SalesOrder'
+    SalesOrderCreatedWebhook:
+      type: object
+      required:
+        - type
+        - data
+      properties:
+        type:
+          type: string
+          enum:
+            - sales_order.order_created
+          default: sales_order.order_created
+        data:
+          $ref: '#/components/schemas/SalesOrderCreatedWebhookData'
+        references:
+          $ref: '#/components/schemas/WebhookReferences'
+
+    SalesOrderCompletedWebhookData:
+      type: object
+      required:
+        - salesOrder
+      properties:
+        salesOrder:
+          $ref: '#/components/schemas/SalesOrder'
+    SalesOrderCompletedWebhook:
+      type: object
+      required:
+        - type
+        - data
+      properties:
+        type:
+          type: string
+          enum:
+            - sales_order.order_completed
+          default: sales_order.order_completed
+        data:
+          $ref: '#/components/schemas/SalesOrderCompletedWebhookData'
+        references:
+          $ref: '#/components/schemas/WebhookReferences'
+    #endregion
+
+    #region OrderDelivery
+    SalesOrderDeliveryCreatedWebhookData:
+      type: object
+      required:
+        - salesOrderDelivery
+      properties:
+        salesOrderDelivery:
+          $ref: '#/components/schemas/SalesOrderDelivery'
+    SalesOrderDeliveryCreatedWebhook:
+      type: object
+      required:
+        - type
+        - data
+      properties:
+        type:
+          type: string
+          enum:
+            - sales_order.delivery_created
+          default: sales_order.delivery_created
+        data:
+          $ref: '#/components/schemas/SalesOrderDeliveryCreatedWebhookData'
+        references:
+          $ref: '#/components/schemas/WebhookReferences'
+
+    SalesOrderDeliveryUpdatedWebhookData:
+      type: object
+      required:
+        - salesOrderDelivery
+      properties:
+        salesOrderDelivery:
+          $ref: '#/components/schemas/SalesOrderDelivery'
+    SalesOrderDeliveryUpdatedWebhook:
+      type: object
+      required:
+        - type
+        - data
+      properties:
+        type:
+          type: string
+          enum:
+            - sales_order.delivery_updated
+          default: sales_order.delivery_updated
+        data:
+          $ref: '#/components/schemas/SalesOrderDeliveryUpdatedWebhookData'
+        references:
+          $ref: '#/components/schemas/WebhookReferences'
+
+    SalesOrderDeliveryCanceledWebhookData:
+      type: object
+      required:
+        - salesOrderDelivery
+      properties:
+        salesOrderDelivery:
+          $ref: '#/components/schemas/SalesOrderDelivery'
+    SalesOrderDeliveryCanceledWebhook:
+      type: object
+      required:
+        - type
+        - data
+      properties:
+        type:
+          type: string
+          enum:
+            - sales_order.delivery_canceled
+          default: sales_order.delivery_canceled
+        data:
+          $ref: '#/components/schemas/SalesOrderDeliveryCanceledWebhookData'
+        references:
+          $ref: '#/components/schemas/WebhookReferences'
+    #endregion
+
+    #region OrderRefund
+    SalesOrderRefundCreatedWebhookData:
+      type: object
+      required:
+        - salesOrderRefund
+      properties:
+        salesOrderRefund:
+          $ref: '#/components/schemas/SalesOrderRefund'
+    SalesOrderRefundCreatedWebhook:
+      type: object
+      required:
+        - type
+        - data
+      properties:
+        type:
+          type: string
+          enum:
+            - sales_order.refund_created
+          default: sales_order.refund_created
+        data:
+          $ref: '#/components/schemas/SalesOrderRefundCreatedWebhookData'
+        references:
+          $ref: '#/components/schemas/WebhookReferences'
+
+    SalesOrderRefundUpdatedWebhookData:
+      type: object
+      required:
+        - salesOrderRefund
+      properties:
+        salesOrderRefund:
+          $ref: '#/components/schemas/SalesOrderRefund'
+    SalesOrderRefundUpdatedWebhook:
+      type: object
+      required:
+        - type
+        - data
+      properties:
+        type:
+          type: string
+          enum:
+            - sales_order.refund_updated
+          default: sales_order.refund_updated
+        data:
+          $ref: '#/components/schemas/SalesOrderRefundUpdatedWebhookData'
+        references:
+          $ref: '#/components/schemas/WebhookReferences'
+
+    SalesOrderRefundCanceledWebhookData:
+      type: object
+      required:
+        - salesOrderRefund
+      properties:
+        salesOrderRefund:
+          $ref: '#/components/schemas/SalesOrderRefund'
+    SalesOrderRefundCanceledWebhook:
+      type: object
+      required:
+        - type
+        - data
+      properties:
+        type:
+          type: string
+          enum:
+            - sales_order.refund_canceled
+          default: sales_order.refund_canceled
+        data:
+          $ref: '#/components/schemas/SalesOrderRefundCanceledWebhookData'
+        references:
+          $ref: '#/components/schemas/WebhookReferences'
+    #endregion
+    #endregion
+
+webhooks:
+  ping:
+    post:
+      summary: Ping
+      description: Ping
+      operationId: ping
+      tags:
+        - OutgoingWebhooks
+      requestBody:
+        description: Ping
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PingWebhook'
+      responses:
+        200:
+          description: OK
+  sales_order.order_created:
+    post:
+      summary: Order Created
+      description: Order Created
+      operationId: sales_order.order_created
+      tags:
+        - OutgoingWebhooks
+      requestBody:
+        description: Order Created
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SalesOrderCreatedWebhook'
+      responses:
+        200:
+          description: OK
+  sales_order.order_completed:
+    post:
+      summary: Order Completed
+      description: Order Completed
+      operationId: sales_order.order_completed
+      tags:
+        - OutgoingWebhooks
+      requestBody:
+        description: Order Completed
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SalesOrderCompletedWebhook'
+      responses:
+        200:
+          description: OK
+  sales_order.delivery_created:
+    post:
+      summary: Order Delivery Created
+      description: Order Delivery Created
+      operationId: sales_order.delivery_created
+      tags:
+        - OutgoingWebhooks
+      requestBody:
+        description: Order Delivery Created
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SalesOrderDeliveryCreatedWebhook'
+      responses:
+        200:
+          description: OK
+  sales_order.delivery_updated:
+    post:
+      summary: Order Delivery Updated
+      description: Order Delivery Updated
+      operationId: sales_order.delivery_updated
+      tags:
+        - OutgoingWebhooks
+      requestBody:
+        description: Order Delivery Updated
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SalesOrderDeliveryUpdatedWebhook'
+      responses:
+        200:
+          description: OK
+  sales_order.delivery_canceled:
+    post:
+      summary: Order Delivery Canceled
+      description: Order Delivery Canceled
+      operationId: sales_order.delivery_canceled
+      tags:
+        - OutgoingWebhooks
+      requestBody:
+        description: Order Delivery Canceled
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SalesOrderDeliveryCanceledWebhook'
+      responses:
+        200:
+          description: OK
+  sales_order.refund_created:
+    post:
+      summary: Order Refund Created
+      description: Order Refund Created
+      operationId: sales_order.refund_created
+      tags:
+        - OutgoingWebhooks
+      requestBody:
+        description: Order Refund Created
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SalesOrderRefundCreatedWebhook'
+      responses:
+        200:
+          description: OK
+  sales_order.refund_updated:
+    post:
+      summary: Order Refund Updated
+      description: Order Refund Updated
+      operationId: sales_order.refund_updated
+      tags:
+        - OutgoingWebhooks
+      requestBody:
+        description: Order Refund Updated
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SalesOrderRefundUpdatedWebhook'
+      responses:
+        200:
+          description: OK
+  sales_order.refund_canceled:
+    post:
+      summary: Order Refund Canceled
+      description: Order Refund Canceled
+      operationId: sales_order.refund_canceled
+      tags:
+        - OutgoingWebhooks
+      requestBody:
+        description: Order Refund Canceled
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SalesOrderRefundCanceledWebhook'
+      responses:
+        200:
+          description: OK
