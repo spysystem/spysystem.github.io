@@ -155,10 +155,12 @@ paths:
 
   /delivery:
     get:
+      deprecated: true
+      summary: Use /orders/{orderId}/deliveries instead
       description: List Deliveries
       operationId: listDeliveries
       tags:
-        - delivery
+        - orders
       security:
         - ApiReadToken: []
         - ApiKeyAuth: []
@@ -191,10 +193,12 @@ paths:
 
   /delivery/{deliveryNo}:
     post:
+      deprecated: true
+      summary: Use /orders/{orderId}/deliveries/{orderDeliveryId} instead
       description: Delivery Status
       operationId: deliveryStatus
       tags:
-        - delivery
+        - orders
       security:
         - ApiKeyAuth: []
       parameters:
@@ -219,10 +223,12 @@ paths:
               schema:
                 $ref: '#/components/schemas/DeliveryResponse'
     get:
+      deprecated: true
+      summary: Use /orders/{orderId}/deliveries/{orderDeliveryId} instead
       description: Delivery Details
       operationId: deliveryDetails
       tags:
-        - delivery
+        - orders
       security:
         - ApiKeyAuth: []
       parameters:
