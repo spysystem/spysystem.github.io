@@ -97,7 +97,10 @@ info:
     url: https://www.apache.org/licenses/LICENSE-2.0.html
 
 servers:
-  - url: https://demo.spysystem.dk/api/v1
+  - url: https://{subDomain}.spysystem.dk/api/v1
+    variables:
+      subDomain:
+        default: demo
 
 tags:
   - name: brands
