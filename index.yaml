@@ -104,10 +104,17 @@ servers:
 
 tags:
   - name: brands
+    x-displayName: Brands
   - name: freight
+    x-displayName: Freight
   - name: orders
+    x-displayName: Sales Orders
   - name: variants
+    x-displayName: Variants
   - name: webhook
+    x-displayName: Webhooks
+  - name: outgoingWebhooks
+    x-displayName: Outgoing Webhooks
 
 paths:
   /auth/login:
@@ -1956,7 +1963,7 @@ webhooks:
       description: Ping
       operationId: ping
       tags:
-        - OutgoingWebhooks
+        - outgoingWebhooks
       requestBody:
         description: Ping
         content:
@@ -1972,7 +1979,7 @@ webhooks:
       description: Order Created
       operationId: sales_order.order_created
       tags:
-        - OutgoingWebhooks
+        - outgoingWebhooks
       requestBody:
         description: Order Created
         content:
@@ -1988,7 +1995,7 @@ webhooks:
       description: Order Completed
       operationId: sales_order.order_completed
       tags:
-        - OutgoingWebhooks
+        - outgoingWebhooks
       requestBody:
         description: Order Completed
         content:
@@ -2004,7 +2011,7 @@ webhooks:
       description: Order Delivery Created
       operationId: sales_order.delivery_created
       tags:
-        - OutgoingWebhooks
+        - outgoingWebhooks
       requestBody:
         description: Order Delivery Created
         content:
@@ -2020,7 +2027,7 @@ webhooks:
       description: Order Delivery Updated
       operationId: sales_order.delivery_updated
       tags:
-        - OutgoingWebhooks
+        - outgoingWebhooks
       requestBody:
         description: Order Delivery Updated
         content:
@@ -2036,7 +2043,7 @@ webhooks:
       description: Order Delivery Canceled
       operationId: sales_order.delivery_canceled
       tags:
-        - OutgoingWebhooks
+        - outgoingWebhooks
       requestBody:
         description: Order Delivery Canceled
         content:
@@ -2052,7 +2059,7 @@ webhooks:
       description: Order Refund Created
       operationId: sales_order.refund_created
       tags:
-        - OutgoingWebhooks
+        - outgoingWebhooks
       requestBody:
         description: Order Refund Created
         content:
@@ -2068,7 +2075,7 @@ webhooks:
       description: Order Refund Updated
       operationId: sales_order.refund_updated
       tags:
-        - OutgoingWebhooks
+        - outgoingWebhooks
       requestBody:
         description: Order Refund Updated
         content:
@@ -2084,7 +2091,7 @@ webhooks:
       description: Order Refund Canceled
       operationId: sales_order.refund_canceled
       tags:
-        - OutgoingWebhooks
+        - outgoingWebhooks
       requestBody:
         description: Order Refund Canceled
         content:
